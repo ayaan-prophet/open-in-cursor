@@ -76,7 +76,30 @@ function parseLink(linkUrl, selectionText, pageUrl) {
         const pathInfo = PULL_REQUEST_PATH_REGEXP.exec(path);
         const repo = pathInfo[1];
         const isFolder = false;
-        const file = selectionText;
+        
+        // For PR links, if no selection text is provided, try to extract file path from the link URL
+        let file = selectionText;
+        if (!file && linkUrl) {
+            // Try to extract file path from the link URL itself
+            const linkUrlObj = new URL(linkUrl);
+            const linkPath = linkUrlObj.pathname;
+            
+            // Look for file patterns in the URL path
+            const fileMatch = linkPath.match(/\/files\/([^/]+(?:\/[^/]+)*)/);
+            if (fileMatch) {
+                file = fileMatch[1];
+            } else {
+                // Fallback: try to extract from the last part of the path that looks like a file
+                const pathParts = linkPath.split('/');
+                for (let i = pathParts.length - 1; i >= 0; i--) {
+                    if (pathParts[i].includes('.') || pathParts[i].includes('/')) {
+                        file = pathParts.slice(i).join('/');
+                        break;
+                    }
+                }
+            }
+        }
+        
         let line = null;
         if (pageUrl.includes(linkUrl)) {
             line = pageUrl.replace(linkUrl, '').replace('R', '').replace('L', '');
