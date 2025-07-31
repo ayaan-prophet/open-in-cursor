@@ -1,4 +1,4 @@
-# Open in VSCode
+# Open in Cursor
 
 > Open links to source code in Cursor.
 
