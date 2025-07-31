@@ -28,14 +28,14 @@ function getVscodeLink({
     remoteHost, insidersBuild, basePath, debug,
 }) {
     let vscodeLink = insidersBuild
-        ? 'vscode-insiders'
-        : 'vscode';
+        ? 'cursor-insiders'
+        : 'cursor';
 
     // vscode://vscode-remote/ssh-remote+[host]/[path/to/file]:[line]
     // OR
     // vscode://file/[path/to/file]:[line]
     if (remoteHost !== '') {
-        vscodeLink += `://vscode-remote/ssh-remote+${remoteHost}`;
+        vscodeLink += `://cursor-remote/ssh-remote+${remoteHost}`;
     } else {
         vscodeLink += '://file';
     }
@@ -174,7 +174,7 @@ const contextMenuId = 'open-in-vscode-context-menu';
 
 chrome.contextMenus.create({
     id: contextMenuId,
-    title: 'Open in VSCode',
+    title: 'Open in Cursor',
     contexts: ['link', 'page'],
 });
 
@@ -189,3 +189,10 @@ chrome.contextMenus.onClicked.addListener(({ menuItemId, ...info }) => {
 chrome.action.onClicked.addListener((({ url }) => {
     openInVscode({ linkUrl: url, pageUrl: url });
 }));
+
+// Listen for messages from content script (option-click events)
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.action === 'openInVscode') {
+        openInVscode(message.data);
+    }
+});

@@ -17,6 +17,12 @@
     "background": {
         "service_worker": "contextmenu.js"
     },
+    "content_scripts": [
+        {
+            "matches": ["<all_urls>"],
+            "js": ["content-script.js"]
+        }
+    ],
     "options_page": "options.html",
     "homepage_url": "https://github.com/aberonni/open-in-vscode",
     "offline_enabled": true,
