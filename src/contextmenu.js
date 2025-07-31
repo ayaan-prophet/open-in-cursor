@@ -68,7 +68,12 @@ function isPR(linkUrl) {
     return PULL_REQUEST_PATH_REGEXP.test(linkUrl);
 }
 
-function parseLink(linkUrl, selectionText, pageUrl) {
+function parseLink(linkUrl, selectionText, pageUrl, debug = false) {
+    if (debug) {
+        // eslint-disable-next-line no-console
+        console.log(`parseLink called with: linkUrl=${linkUrl}, selectionText=${selectionText}, pageUrl=${pageUrl}`);
+    }
+    
     const url = new URL(linkUrl ?? pageUrl);
     const path = url.pathname;
 
@@ -86,6 +91,10 @@ function parseLink(linkUrl, selectionText, pageUrl) {
             
             // Look for file patterns in the URL path
             const fileMatch = linkPath.match(/\/files\/([^/]+(?:\/[^/]+)*)/);
+            if (debug) {
+                // eslint-disable-next-line no-console
+                console.log(`PR file match result: ${fileMatch}`);
+            }
             if (fileMatch) {
                 file = fileMatch[1];
             } else {
@@ -168,7 +177,7 @@ async function openInVscode({ linkUrl, selectionText, pageUrl }) {
 
     try {
         const options = await getOptions();
-        const parsedLinkData = parseLink(linkUrl, selectionText, pageUrl);
+        const parsedLinkData = parseLink(linkUrl, selectionText, pageUrl, options.debug);
         const url = getVscodeLink(parsedLinkData, options);
         await chrome.scripting.executeScript(
             {
@@ -217,5 +226,9 @@ chrome.action.onClicked.addListener((({ url }) => {
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.action === 'openInVscode') {
         openInVscode(message.data);
+        // Send a response to prevent the "message port closed" error
+        sendResponse({ success: true });
     }
+    // Return true to indicate we will send a response asynchronously
+    return true;
 });
